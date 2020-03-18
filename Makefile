@@ -28,8 +28,6 @@ ifneq ($(V),1)
 	MFLAGS += -s
 endif
 
-include sdk.mk
-
 APPS		+= $(OUTDIR)/bt_perf
 
 APPS_native	+=
