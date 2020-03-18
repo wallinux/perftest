@@ -1,0 +1,34 @@
+-----------------------
+/home/awallin/tmp/perftest/out/bt_perf.native: gcc -O0 -g -ggdb -Wall -funwind-tables -fno-omit-frame-pointer -frecord-gcc-switches bt_perf.c -o /home/awallin/tmp/perftest/out/bt_perf.native
+GCC: (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0 -imultiarch x86_64-linux-gnu bt_perf.c -mtune=generic -march=x86-64 -ggdb -Wall -funwind-tables -fno-omit-frame-pointer -frecord-gcc-switches 
+perf_a: stop
+ perf_b: 0
+  perf_c: 0
+   perf_d: 0
+    perf_e: 0
+Obtained 9 stack frames.
+/home/awallin/tmp/perftest/out/bt_perf.native(+0x922) [0x560e8ee9b922]
+/home/awallin/tmp/perftest/out/bt_perf.native(+0xab7) [0x560e8ee9bab7]
+/home/awallin/tmp/perftest/out/bt_perf.native(+0xb02) [0x560e8ee9bb02]
+/home/awallin/tmp/perftest/out/bt_perf.native(+0xb39) [0x560e8ee9bb39]
+/home/awallin/tmp/perftest/out/bt_perf.native(+0xb70) [0x560e8ee9bb70]
+/home/awallin/tmp/perftest/out/bt_perf.native(+0xbaf) [0x560e8ee9bbaf]
+/home/awallin/tmp/perftest/out/bt_perf.native(+0xbfb) [0x560e8ee9bbfb]
+/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xe7) [0x7fa496cd6b97]
+/home/awallin/tmp/perftest/out/bt_perf.native(+0x81a) [0x560e8ee9b81a]
+Must be run with root priviligies
+native: Running perf (sleep=10)
+
+---- file size
+-rw-r--r-- 1 root root 149726 mar 18 21:55 out/profiling/native/perf.out
+
+---- no of samples
+native: 155
+
+---- userspace stack trace
+native [perf_a]: 143
+native [perf_b]: 60
+native [perf_c]: 59
+native [perf_d]: 60
+native [perf_e]: 58
+

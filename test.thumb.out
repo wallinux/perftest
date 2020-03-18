@@ -1,0 +1,37 @@
+[31m------ backtrace.thumb
+[mGCC: (GNU) 8.2.0 aeabi -isysroot /opt/windriver/wrlinux/wrl18.rcpl13/sysroots/cortexa15t2-neon-wrs-linux-gnueabi bt_perf.c -mthumb -mfpu=neon -mfloat-abi=softfp -mcpu=cortex-a15 -mapcs-frame -mtls-dialect=gnu -march=armv7ve+neon -ggdb -Wall -funwind-tables -fno-omit-frame-pointer -frecord-gcc-switches 
+/root/perftest/out/bt_perf.thumb stop || true
+perf_a: stop
+ perf_b: 0
+  perf_c: 0
+   perf_d: 0
+    perf_e: 0
+Obtained 8 stack frames.
+/root/perftest/out/bt_perf.thumb(+0x6ee) [0x4196ee]
+/root/perftest/out/bt_perf.thumb(+0x818) [0x419818]
+/root/perftest/out/bt_perf.thumb(+0x870) [0x419870]
+/root/perftest/out/bt_perf.thumb(+0x8ac) [0x4198ac]
+/root/perftest/out/bt_perf.thumb(+0x8e8) [0x4198e8]
+/root/perftest/out/bt_perf.thumb(+0x924) [0x419924]
+/root/perftest/out/bt_perf.thumb(+0x974) [0x419974]
+/lib/libc.so.6(__libc_start_main+0xa1) [0xb6e7d9e2]
+[31m------ perftest.thumb
+[mMust be run with root priviligies
+sudo ./perftest.all thumb
+thumb: Running perf (sleep=10)
+
+---- file size
+-rw-r--r-- 1 root root 10641 Mar 18 21:51 out/profiling/thumb/perf.out
+
+---- no of samples
+thumb: 27
+
+---- userspace stack trace
+thumb [perf_a]: 0
+thumb [perf_b]: 0
+thumb [perf_c]: 0
+thumb [perf_d]: 0
+thumb [perf_e]: 0
+
+[31m------ test.thumb
+[m
