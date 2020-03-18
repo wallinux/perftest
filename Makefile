@@ -137,3 +137,19 @@ install deploy upload:
 	$(TRACE)
 	$(MAKE) deploy.scripts
 	$(MAKE) deploy.apps
+
+ifeq ($(TARGET),native)
+backtrace.test:
+	$(TRACE)
+	@strings $(OUTDIR)/bt_perf | sed -n '/GCC:/,/frecord-gcc-switches/p' | tr '\n' ' '
+	$(ECHO) ""
+	$(Q)$(OUTDIR)/bt_perf stop || true
+
+perftest.test:
+	$(TRACE)
+	$(ECHO) "Must be run with root priviligies"
+	$(Q)sudo ./scripts/perftest.all $(MACHINE)
+
+test: backtrace.test perftest.test
+	$(TRACE)
+endif

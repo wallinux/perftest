@@ -1,14 +1,13 @@
 #!/bin/bash
 
-SLEEP_TIME=${1:-10}
-PROFILE_BASE=profiling
-
-MACHINES=$(cd /root/test; ls -1d axxia*)
+MACHINE=${1:-native}
+SLEEP_TIME=${2:-10}
+PROFILE_BASE=out/profiling
 
 run_test() {
     echo "$1: Running perf (sleep=$SLEEP_TIME)"
     profile_dir=$PROFILE_BASE/$1
-    ./test/scripts/perftest test/$1/bt_perf $profile_dir $SLEEP_TIME &> /dev/null
+    ./scripts/perftest out/$1/bt_perf $profile_dir $SLEEP_TIME &> /dev/null
 }
 
 samples() {
@@ -16,7 +15,7 @@ samples() {
 }
 
 find_function(){
-    echo "$1 [$2]: $(grep "$2" $PROFILE_BASE/$1/perf.out | wc -l)"
+    echo "$1 [$2]: $(grep " $2 " $PROFILE_BASE/$1/perf.out | wc -l)"
 }
 
 find_all() {
@@ -28,21 +27,15 @@ find_all() {
     echo ""
 }
 
-all_machines() {
-    for machine in $MACHINES; do
-	$1 $machine
-    done
-}
-
 rm -rf $PROFILE_BASE
 
-all_machines run_test
+run_test $MACHINE
 
 echo -e "\n---- file size"
 ls -al $PROFILE_BASE/*/perf.out
 
 echo -e "\n---- no of samples"
-all_machines samples
+samples $MACHINE
 
 echo -e "\n---- userspace stack trace"
-all_machines find_all
+find_all $MACHINE
