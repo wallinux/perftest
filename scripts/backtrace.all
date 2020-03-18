@@ -1,0 +1,19 @@
+#!/bin/bash
+
+MACHINES=$(cd /root/test; ls -1d axxia*)
+
+run_test() {
+    echo -e "\n---- $1"
+    strings test/$1/bt_perf | sed -n '/GCC:/,/frecord-gcc-switches/p' | tr '\n' ' '
+    echo ""
+    test/$1/bt_perf stop
+}
+
+all_machines() {
+    for machine in $MACHINES; do
+	$1 $machine
+    done
+}
+
+all_machines run_test
+exit 0

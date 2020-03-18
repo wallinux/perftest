@@ -1,0 +1,30 @@
+#!/bin/bash
+
+if [ $# -lt 1 ]; then
+    echo '$0 <app>'
+    exit 1
+fi
+
+APP=$1
+PROFILE_DIR=${2:-profiling}
+SLEEP_TIME=${3:-10}
+
+CALLGRAPH=${CALLGRAPH:-fp}
+
+if [ ! -x $APP ]; then
+    echo '$APP not executable'
+    exit 2
+fi
+
+mkdir -p $PROFILE_DIR
+rm -rf $PROFILE_DIR/*
+
+$APP >/dev/null &
+PID=$!
+
+perf record --no-buildid --no-buildid-cache --call-graph $CALLGRAPH -F 999 -p $PID -g -o $PROFILE_DIR/perf.data sleep $SLEEP_TIME
+cat /proc/kallsyms > $PROFILE_DIR/kallsyms
+
+perf script --header -i $PROFILE_DIR/perf.data -F comm,pid,tid,time,event,ip,sym,dso,period --kallsyms $PROFILE_DIR/kallsyms > $PROFILE_DIR/perf.out
+
+kill $PID

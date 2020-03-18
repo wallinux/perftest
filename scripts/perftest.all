@@ -1,0 +1,48 @@
+#!/bin/bash
+
+SLEEP_TIME=${1:-10}
+PROFILE_BASE=profiling
+
+MACHINES=$(cd /root/test; ls -1d axxia*)
+
+run_test() {
+    echo "$1: Running perf (sleep=$SLEEP_TIME)"
+    profile_dir=$PROFILE_BASE/$1
+    ./test/scripts/perftest test/$1/bt_perf $profile_dir $SLEEP_TIME &> /dev/null
+}
+
+samples() {
+    echo "$1: $(grep "^bt_perf" $PROFILE_BASE/$1/perf.out | wc -l)"
+}
+
+find_function(){
+    echo "$1 [$2]: $(grep "$2" $PROFILE_BASE/$1/perf.out | wc -l)"
+}
+
+find_all() {
+    find_function $1 perf_a
+    find_function $1 perf_b
+    find_function $1 perf_c
+    find_function $1 perf_d
+    find_function $1 perf_e
+    echo ""
+}
+
+all_machines() {
+    for machine in $MACHINES; do
+	$1 $machine
+    done
+}
+
+rm -rf $PROFILE_BASE
+
+all_machines run_test
+
+echo -e "\n---- file size"
+ls -al $PROFILE_BASE/*/perf.out
+
+echo -e "\n---- no of samples"
+all_machines samples
+
+echo -e "\n---- userspace stack trace"
+all_machines find_all
