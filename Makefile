@@ -12,34 +12,27 @@ export SHELL	:= /bin/bash
 
 include tools.mk
 
-WRLVER		?= wrl18
-MACHINE		?= native
-
-include $(WRLVER).mk
-
 TOP		:= $(shell pwd)
-OUTBASE		?= $(TOP)/out
-OUTDIR		= $(OUTBASE)/$(MACHINE)
+OUTDIR		?= $(TOP)/out
 
-# Define V=1 to echo everything
-V	?= 0
-ifneq ($(V),1)
-	Q=@
-	MFLAGS += -s
-endif
+APPS		+=  $(OUTDIR)/bt_perf.native
+APPS		+=  $(OUTDIR)/bt_perf.arm
+APPS		+=  $(OUTDIR)/bt_perf.thumb
 
-APPS		+= $(OUTDIR)/bt_perf
+CFLAGS_X	+= -O0
+CFLAGS_X	+= -g -ggdb
+CFLAGS_X	+= -Wall
+CFLAGS_X	+= -funwind-tables
+CFLAGS_X	+= -fno-omit-frame-pointer
+CFLAGS_X	+= -frecord-gcc-switches
+CFLAGS_arm	+= $(CFLAGS_X) -mapcs-frame
+CFLAGS_thumb	+= $(CFLAGS_X) -mapcs-frame
 
-APPS_native	+=
-CFLAGS_native	=
-
-APPS		+= $(APPS_$(MACHINE))
-
-CFLAGS		+= -O0 -g -ggdb -Wall -rdynamic $(CFLAGS_$(MACHINE)) -frecord-gcc-switches
-
-DEPLOY_DIR	?= test/$(MACHINE)
-TARGET_native	?= native
-TARGET		?=$(TARGET_$(MACHINE))
+SDK_BASE	?= /opt/windriver/wrlinux/wrl18
+SDK_ENV_axxiaarm?= $(SDK_BASE)/environment-setup-cortexa15t2-neon-wrs-linux-gnueabi
+SDK_ENV_arm	?= $(OUTDIR)/environment_arm
+SDK_ENV_thumb	?= $(OUTDIR)/environment_thumb
+SDK_ENV_native	?= $(OUTDIR)/environment_native
 
 #########################################################
 .PHONY:: all help
@@ -48,106 +41,99 @@ Makefile.help:
 	$(call run-help, Makefile)
 	$(GREEN)
 	$(ECHO) ""
-	$(ECHO) " WRLVER   = $(WRLVER)"
-	$(ECHO) " MACHINE  = $(MACHINE)"
-	$(ECHO) " TARGET   = $(TARGET)"
+	$(ECHO) " APPS  = $(APPS)"
 
 help:: Makefile.help
 
 all: $(OUTDIR) $(APPS) # build all applications
 	$(TRACE)
 
-native: # build native target
-	$(TRACE)
-	$(MAKE) all MACHINE=native
-
-$(OUTDIR) $(OUTBASE):
+$(OUTDIR):
 	$(TRACE)
 	$(MKDIR) -p $@
 
-ifeq ($(BT_PERFTEST),1)
-$(OUTDIR)/bt_perf: bt_perf.c Makefile | $(OUTDIR)
+####################################################################
+$(SDK_ENV_native): | $(OUTDIR)
 	$(TRACE)
-	$(info $(MACHINE): building with BT_PERFTEST=$(BT_PERFTEST))
-ifeq ($(MACHINE),axxiaarm-prime)
-	$(eval cc=arm-wrs-linux-gnueabi-gcc)
-	$(eval sysroot=/opt/windriver/wrlinux/wrl18/sysroots/cortexa15t2-neon-wrs-linux-gnueabi)
-	$(eval cflags=-march=armv7ve -marm -mthumb-interwork -mfpu=neon -mfloat-abi=softfp -mcpu=cortex-a15)
-else ifeq ($(MACHINE),axxiaarm)
-	$(eval cc=arm-wrs-linux-gnueabi-gcc)
-	$(eval sysroot=/opt/windriver/wrlinux/wrl8/sysroots/cortexa15-vfp-neon-wrs-linux-gnueabi)
-	$(eval cflags=-march=armv7-a -mfloat-abi=softfp -mfpu=neon -marm -mthumb-interwork -mtune=cortex-a15)
-else ifeq ($(MACHINE),axxiaarm64-prime.32)
-	$(eval cc=arm-wrsmllib32-linux-gnueabi-gcc)
-	$(eval sysroot=/opt/windriver/wrlinux/wrl18/sysroots//aarch64-wrs-linux)
-	$(eval cflags=-march=armv7-a -marm -mfpu=neon -mfloat-abi=softfp)
-else ifeq ($(MACHINE),axxiaarm64-ml.32)
-	$(eval cc=arm-wrsmllib32-linux-gnueabi-gcc)
-	$(eval sysroot=/opt/windriver/wrlinux/wrl8/sysroots//aarch64-wrs-linux)
-	$(eval cflags=-march=armv7-a -mfloat-abi=softfp -mfpu=neon -marm -mthumb-interwork)
-else
-	$(error $MACHINE not supported)
-endif
-	$(SDK); echo ORIGIN - $@: $$CC $(CFLAGS) $< -o $@
-	$(ECHO) UPDATE - $@: $(cc) $(cflags) --sysroot=$(sysroot) $(CFLAGS) $< -o $@
-	$(SDK); $(cc) $(cflags) --sysroot=$(sysroot) $(CFLAGS) $< -o $@
-else
-$(OUTDIR)/bt_perf: bt_perf.c Makefile | $(OUTDIR)
-	$(TRACE)
-	$(info $(MACHINE): building without BT_PERFTEST=$(BT_PERFTEST))
-	$(SDK); echo $@: $$CC $(CFLAGS) $< -o $@
-	$(SDK); $$CC $(CFLAGS) $< -o $@
-endif
+	$(ECHO) "export CC=gcc" > $@
 
-clean:
+$(OUTDIR)/bt_perf.native: bt_perf.c Makefile $(SDK_ENV_native) | $(OUTDIR)
 	$(TRACE)
-	$(RM) $(APPS) $(OUTDIR)/*.o
+	$(ECHO) -----------------------
+	@source $(SDK_ENV_native); echo $@: $$CC $(CFLAGS_X) $< -o $@
+	@source $(SDK_ENV_native); $$CC $(CFLAGS_X) $< -o $@
 
-distclean:
+backtrace.native: $(OUTDIR)/bt_perf.native # show backtrace
 	$(TRACE)
-	$(RM) -r $(OUTBASE)
-	$(RM) *~ \#*#
-
-deploy.scripts:
-	$(TRACE)
-ifneq ($(TARGET),native)
-ifeq ($(V),1)
-	$(eval verbose=-v)
-endif
-	-$(RSYNC) $(verbose) -az scripts $(TARGET):test/
-else
-	$(ECHO) "do nothing for TARGET=native"
-endif
-
-deploy.apps:
-	$(TRACE)
-ifneq ($(TARGET),native)
-ifeq ($(V),1)
-	$(eval verbose=-v)
-endif
-	$(SSH) $(TARGET) mkdir -p $(DEPLOY_DIR)
-	-$(RSYNC) $(verbose) -az $(OUTDIR)/* $(TARGET):$(DEPLOY_DIR)
-else
-	$(ECHO) "do nothing for TARGET=native"
-endif
-
-install deploy upload:
-	$(TRACE)
-	$(MAKE) deploy.scripts
-	$(MAKE) deploy.apps
-
-ifeq ($(TARGET),native)
-backtrace.test:
-	$(TRACE)
-	@strings $(OUTDIR)/bt_perf | sed -n '/GCC:/,/frecord-gcc-switches/p' | tr '\n' ' '
+	@strings $< | sed -n '/GCC:/,/frecord-gcc-switches/p' | tr '\n' ' '
 	$(ECHO) ""
-	$(Q)$(OUTDIR)/bt_perf stop || true
+	$(Q)$< stop || true
 
-perftest.test:
+perftest.native: $(OUTDIR)/bt_perf.native # run perftest and check stack
 	$(TRACE)
 	$(ECHO) "Must be run with root priviligies"
-	$(Q)sudo ./scripts/perftest.all $(MACHINE)
+	$(Q)sudo ./perftest.all native
 
-test: backtrace.test perftest.test
+test.native: backtrace.native perftest.native # run native tests
 	$(TRACE)
-endif
+
+####################################################################
+$(SDK_ENV_thumb): $(SDK_ENV_axxiaarm) | $(OUTDIR)
+	$(TRACE)
+	$(CP) $< $@
+
+$(OUTDIR)/bt_perf.thumb: bt_perf.c Makefile $(SDK_ENV_thumb)| $(OUTDIR)
+	$(TRACE)
+	$(ECHO) -----------------------
+	@source $(SDK_ENV_thumb); echo $@: $$CC $(CFLAGS_thumb) $< -o $@
+	@source $(SDK_ENV_thumb); $$CC $(CFLAGS_thumb) $< -o $@
+
+backtrace.thumb: # show backtrace
+	$(TRACE)
+	@strings $(OUTDIR)/bt_perf.thumb | sed -n '/GCC:/,/frecord-gcc-switches/p' | tr '\n' ' '
+	$(ECHO) ""
+	$(Q)$(OUTDIR)/bt_perf.thumb stop || true
+
+perftest.thumb: # run perftest and check stack
+	$(TRACE)
+	$(ECHO) "Must be run with root priviligies"
+	$(Q)sudo ./perftest.all thumb
+
+test.thumb: backtrace.thumb perftest.thumb  # run thumb tests
+	$(TRACE)
+
+####################################################################
+$(SDK_ENV_arm): $(SDK_ENV_axxiaarm) | $(OUTDIR)
+	$(TRACE)
+	$(CP) $< $@
+	$(SED) 's/mthumb/marm/' $@
+
+$(OUTDIR)/bt_perf.arm: bt_perf.c Makefile $(SDK_ENV_arm) | $(OUTDIR)
+	$(TRACE)
+	$(ECHO) -----------------------
+	@source $(SDK_ENV_arm); echo $@: $$CC $(CFLAGS_arm) $< -o $@
+	@source $(SDK_ENV_arm); $$CC $(CFLAGS_arm) $< -o $@
+
+backtrace.arm: # show backtrace
+	$(TRACE)
+	@strings  $(OUTDIR)/bt_perf.arm | sed -n '/GCC:/,/frecord-gcc-switches/p' | tr '\n' ' '
+	$(ECHO) ""
+	$(Q) $(OUTDIR)/bt_perf.arm stop || true
+
+perftest.arm: # run perftest and check stack
+	$(TRACE)
+	$(ECHO) "Must be run with root priviligies"
+	$(Q)sudo ./perftest.all arm
+
+test.arm: backtrace.arm perftest.arm # run arm tests
+	$(TRACE)
+
+####################################################################
+clean: # clean
+	$(TRACE)
+	$(RM) $(APPS)
+
+distclean: # distclean
+	$(TRACE)
+	$(RM) -r $(OUTDIR)
+	$(RM) *~ \#*#

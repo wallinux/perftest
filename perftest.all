@@ -7,7 +7,7 @@ PROFILE_BASE=out/profiling
 run_test() {
     echo "$1: Running perf (sleep=$SLEEP_TIME)"
     profile_dir=$PROFILE_BASE/$1
-    ./scripts/perftest out/$1/bt_perf $profile_dir $SLEEP_TIME &> /dev/null
+    ./perftest out/bt_perf.$1 $profile_dir $SLEEP_TIME &> /dev/null
 }
 
 samples() {
