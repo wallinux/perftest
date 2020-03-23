@@ -161,3 +161,9 @@ target.test.thumb: # run thumb test on target
 target.test.arm: # run arm test on target
 	$(TRACE)
 	$(SSH) root@$(TARGET_IP) make -C perftest test.arm
+
+target.all: build.arm build.thumb
+	$(TRACE)
+	$(MAKE) target.sync
+	$(SSH) root@$(TARGET_IP) make -C perftest perftest.arm
+	$(SSH) root@$(TARGET_IP) make -C perftest perftest.thumb
