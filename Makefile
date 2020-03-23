@@ -74,7 +74,7 @@ backtrace.native: $(OUTDIR)/bt_perf.native # show backtrace
 
 perftest.native: $(OUTDIR)/bt_perf.native # run perftest and check stack
 	$(TRACE)
-	$(ECHO) "Must be run with root priviligies"
+	$(ECHO) "Must be run with root privileges"
 	$(Q)sudo ./perftest.all native
 
 test.native: backtrace.native perftest.native # run native tests
@@ -101,7 +101,6 @@ backtrace.thumb: # show backtrace
 
 perftest.thumb: # run perftest and check stack
 	$(TRACE)
-	$(ECHO) "Must be run with root priviligies"
 	$(Q)sudo ./perftest.all thumb
 
 test.thumb: backtrace.thumb perftest.thumb  # run thumb tests
@@ -129,7 +128,6 @@ backtrace.arm: # show backtrace
 
 perftest.arm: # run perftest and check stack
 	$(TRACE)
-	$(ECHO) "Must be run with root priviligies"
 	$(Q)sudo ./perftest.all arm
 
 test.arm: backtrace.arm perftest.arm # run arm tests
