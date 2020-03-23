@@ -50,7 +50,7 @@ all: $(OUTDIR) $(APPS) # build all applications
 
 $(OUTDIR):
 	$(TRACE)
-	$(MKDIR) -p $@
+	$(MKDIR) $@
 
 ####################################################################
 $(SDK_ENV_native): | $(OUTDIR)
@@ -62,6 +62,8 @@ $(OUTDIR)/bt_perf.native: bt_perf.c Makefile $(SDK_ENV_native) | $(OUTDIR)
 	$(ECHO) -----------------------
 	@source $(SDK_ENV_native); echo $@: $$CC $(CFLAGS_X) $< -o $@
 	@source $(SDK_ENV_native); $$CC $(CFLAGS_X) $< -o $@
+
+build.native: $(OUTDIR)/bt_perf.native # build test application (native)
 
 backtrace.native: $(OUTDIR)/bt_perf.native # show backtrace
 	$(TRACE)
@@ -88,6 +90,8 @@ $(OUTDIR)/bt_perf.thumb: bt_perf.c Makefile $(SDK_ENV_thumb)| $(OUTDIR)
 	@source $(SDK_ENV_thumb); echo $@: $$CC $(CFLAGS_thumb) $< -o $@
 	@source $(SDK_ENV_thumb); $$CC $(CFLAGS_thumb) $< -o $@
 
+build.thumb: $(OUTDIR)/bt_perf.thumb # build test application (thumb)
+
 backtrace.thumb: # show backtrace
 	$(TRACE)
 	@strings $(OUTDIR)/bt_perf.thumb | sed -n '/GCC:/,/frecord-gcc-switches/p' | tr '\n' ' '
@@ -113,6 +117,8 @@ $(OUTDIR)/bt_perf.arm: bt_perf.c Makefile $(SDK_ENV_arm) | $(OUTDIR)
 	$(ECHO) -----------------------
 	@source $(SDK_ENV_arm); echo $@: $$CC $(CFLAGS_arm) $< -o $@
 	@source $(SDK_ENV_arm); $$CC $(CFLAGS_arm) $< -o $@
+
+build.arm: $(OUTDIR)/bt_perf.arm # build test application (arm)
 
 backtrace.arm: # show backtrace
 	$(TRACE)
