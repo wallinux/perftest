@@ -42,6 +42,7 @@ Makefile.help:
 	$(GREEN)
 	$(ECHO) ""
 	$(ECHO) " APPS  = $(APPS)"
+	$(NORMAL)
 
 help:: Makefile.help
 
@@ -143,3 +144,22 @@ distclean: # distclean
 	$(TRACE)
 	$(RM) -r $(OUTDIR)
 	$(RM) *~ \#*#
+
+####################################################################
+TARGET_IP ?= 128.224.95.181
+
+target.sync: # cp files to target
+	$(TRACE)
+	$(RSYNC) -avz --exclude=*native* --exclude=.git . root@$(TARGET_IP):perftest/
+
+target.ssh: # ssh to target
+	$(TRACE)
+	$(SSH) root@$(TARGET_IP)
+
+target.test.thumb: # run thumb test on target
+	$(TRACE)
+	$(SSH) root@$(TARGET_IP) make -C perftest test.thumb
+
+target.test.arm: # run arm test on target
+	$(TRACE)
+	$(SSH) root@$(TARGET_IP) make -C perftest test.arm
