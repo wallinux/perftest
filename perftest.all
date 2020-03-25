@@ -1,13 +1,18 @@
 #!/bin/bash
 
 MACHINE=${1:-native}
-SLEEP_TIME=${2:-10}
+SLEEP_TIME=${2:-5}
 PROFILE_BASE=out/profiling
 
 run_test() {
     echo "$1: Running perf (sleep=$SLEEP_TIME)"
     profile_dir=$PROFILE_BASE/$1
-    ./perftest out/bt_perf.$1 $profile_dir $SLEEP_TIME &> /dev/null
+    mkdir -p $profile_dir
+    ./perftest out/bt_perf.$1 $profile_dir $SLEEP_TIME &> $PROFILE_BASE/perftest_$MACHINE.out
+    if [ $? -ne 0 ]; then
+	echo -e "\n===== perf failed, core dumped ====\n"
+	exit -1
+    fi
 }
 
 samples() {
@@ -27,12 +32,11 @@ find_all() {
     echo ""
 }
 
-rm -rf $PROFILE_BASE
-
+echo -e "\n==== $(perf version) ===="
 run_test $MACHINE
 
 echo -e "\n---- file size"
-ls -al $PROFILE_BASE/*/perf.out
+ls -al $PROFILE_BASE/$MACHINE/perf.out
 
 echo -e "\n---- no of samples"
 samples $MACHINE

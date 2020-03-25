@@ -8,6 +8,8 @@
 int stop = 0;
 
 #define NOINLINE __attribute__ ((noinline))
+#define ARM __attribute__(("arm"))
+#define THUMB __attribute__(("thumb"))
 
 /* Obtain a backtrace and print it to stdout. */
 void NOINLINE print_trace (void)
@@ -26,8 +28,10 @@ void NOINLINE print_trace (void)
 		printf ("%s\n", strings[i]);
 
 	free (strings);
-	if (stop == 1)
+	if (stop == 1) {
+		sleep(2);
 		exit(1);
+	}
 }
 
 int NOINLINE nsleep(long miliseconds)

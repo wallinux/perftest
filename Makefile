@@ -101,7 +101,7 @@ backtrace.thumb: # show backtrace
 
 perftest.thumb: # run perftest and check stack
 	$(TRACE)
-	$(Q)sudo ./perftest.all thumb
+	$(Q)./perftest.all thumb
 
 test.thumb: backtrace.thumb perftest.thumb  # run thumb tests
 	$(TRACE)
@@ -128,7 +128,7 @@ backtrace.arm: # show backtrace
 
 perftest.arm: # run perftest and check stack
 	$(TRACE)
-	$(Q)sudo ./perftest.all arm
+	$(Q)./perftest.all arm
 
 test.arm: backtrace.arm perftest.arm # run arm tests
 	$(TRACE)
@@ -148,7 +148,8 @@ TARGET_IP ?= 128.224.95.181
 
 target.sync: # cp files to target
 	$(TRACE)
-	$(RSYNC) -avz --exclude=*native* --exclude=.git . root@$(TARGET_IP):perftest/
+	$(RSYNC) -az --exclude=.* --exclude=*~ --exclude=#* --exclude=*native* --exclude=.git \
+		. root@$(TARGET_IP):perftest/
 
 target.ssh: # ssh to target
 	$(TRACE)
@@ -156,14 +157,14 @@ target.ssh: # ssh to target
 
 target.test.thumb: # run thumb test on target
 	$(TRACE)
-	$(SSH) root@$(TARGET_IP) make -C perftest test.thumb
+	$(SSH) root@$(TARGET_IP) make -s -C perftest test.thumb
 
 target.test.arm: # run arm test on target
 	$(TRACE)
-	$(SSH) root@$(TARGET_IP) make -C perftest test.arm
+	$(SSH) root@$(TARGET_IP) make -s -C perftest test.arm
 
 target.all: build.arm build.thumb
 	$(TRACE)
-	$(MAKE) target.sync
-	$(SSH) root@$(TARGET_IP) make -C perftest perftest.arm
-	$(SSH) root@$(TARGET_IP) make -C perftest perftest.thumb
+	$(MAKE) -s target.sync
+	$(SSH) root@$(TARGET_IP) make -s -C perftest perftest.arm
+	$(SSH) root@$(TARGET_IP) make -s -C perftest perftest.thumb
