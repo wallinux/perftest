@@ -10,12 +10,14 @@ PROFILE_DIR=${2:-profiling}
 SLEEP_TIME=${3:-10}
 PERF=${PERF:-perf}
 
-CALLGRAPH=${CALLGRAPH:-fp}
+CALLGRAPH=${CALLGRAPH:-dwarf}
 
 if [ ! -x $APP ]; then
     echo '$APP not executable'
     exit 2
 fi
+
+echo "=== $0:  PERF=$PERF, SLEEP_TIME=$SLEEP_TIME, CALLGRAPH=$CALLGRAPH"
 
 rm -f core
 ulimit -c unlimited
@@ -26,10 +28,9 @@ $APP >/dev/null &
 PID=$!
 
 $PERF record --no-buildid --no-buildid-cache --call-graph $CALLGRAPH -F 999 -p $PID -g -o $PROFILE_DIR/perf.data sleep $SLEEP_TIME
-cat /proc/kallsyms > $PROFILE_DIR/kallsyms
 
 if [ -e $PROFILE_DIR/perf.data ]; then
-    $PERF script --header -i $PROFILE_DIR/perf.data -F comm,pid,tid,time,event,ip,sym,dso,period --kallsyms $PROFILE_DIR/kallsyms > $PROFILE_DIR/perf.out
+    $PERF script --header -i $PROFILE_DIR/perf.data -F comm,pid,tid,time,event,ip,sym,dso,period > $PROFILE_DIR/perf.out
 else
     echo "$PROFILE_DIR/perf.data is missing!!!"
 fi

@@ -3,12 +3,13 @@
 MACHINE=${1:-native}
 SLEEP_TIME=${2:-5}
 PROFILE_BASE=out/profiling
+PERFTEST=${PERFTEST-./perftest}
 
 run_test() {
     echo "$1: Running perf (sleep=$SLEEP_TIME)"
     profile_dir=$PROFILE_BASE/$1
     mkdir -p $profile_dir
-    ./perftest out/bt_perf.$1 $profile_dir $SLEEP_TIME &> $PROFILE_BASE/perftest_$MACHINE.out
+    $PERFTEST out/bt_perf.$1 $profile_dir $SLEEP_TIME &> $PROFILE_BASE/perftest_$MACHINE.out
     if [ $? -ne 0 ]; then
 	echo -e "\n===== perf failed, core dumped ====\n"
 	exit -1

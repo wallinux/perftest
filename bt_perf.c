@@ -52,7 +52,7 @@ int NOINLINE nsleep(long miliseconds)
 	return nanosleep(&req , &rem);
 }
 
-void NOINLINE perf_e(int i)
+int NOINLINE perf_e(int i)
 {
 	static int once = 1;
 	printf ("    %s: %i\n", __func__, i);
@@ -62,18 +62,21 @@ void NOINLINE perf_e(int i)
 		once=0;
 		sleep(1);
 	}
+	return i + once;
 }
 
-void NOINLINE perf_d(int i)
+int NOINLINE perf_d(int i)
 {
 	printf ("   %s: %i\n", __func__, i);
-	perf_e(i*2);
+	return perf_e(i*2);
 }
 
 void NOINLINE perf_c(int i)
 {
+	static int j;
+
 	printf ("  %s: %i\n", __func__, i);
-	perf_d(i*2);
+	j += perf_d(i*2);
 }
 
 void NOINLINE perf_b(int i)
