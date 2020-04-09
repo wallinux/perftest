@@ -25,6 +25,9 @@ CFLAGS_X	+= -Wall
 CFLAGS_X	+= -funwind-tables
 CFLAGS_X	+= -fno-omit-frame-pointer
 CFLAGS_X	+= -frecord-gcc-switches
+ifdef STATIC
+CFLAGS_X	+= -static
+endif
 CFLAGS_arm	+= $(CFLAGS_X) -mapcs-frame
 CFLAGS_thumb	+= $(CFLAGS_X) -mapcs-frame
 
@@ -33,6 +36,8 @@ SDK_ENV_axxiaarm?= $(SDK_BASE)/environment-setup-cortexa15t2-neon-wrs-linux-gnue
 SDK_ENV_arm	?= $(OUTDIR)/environment_arm
 SDK_ENV_thumb	?= $(OUTDIR)/environment_thumb
 SDK_ENV_native	?= $(OUTDIR)/environment_native
+
+CALLGRAPH	?= fp
 
 #########################################################
 .PHONY:: all help
@@ -77,6 +82,11 @@ perftest.native: $(OUTDIR)/bt_perf.native # run perftest and check stack
 	$(ECHO) "Must be run with root privileges"
 	$(Q)sudo ./perftest.all native
 
+perftest2.native: $(OUTDIR)/bt_perf.native # run perftest2 and check stack
+	$(TRACE)
+	$(ECHO) "Must be run with root privileges"
+	$(Q)PERFTEST=./perftest2 sudo ./perftest.all native
+
 test.native: backtrace.native perftest.native # run native tests
 	$(TRACE)
 
@@ -102,6 +112,10 @@ backtrace.thumb: # show backtrace
 perftest.thumb: # run perftest and check stack
 	$(TRACE)
 	$(Q)./perftest.all thumb
+
+perftest2.thumb: # run perftest2 and check stack
+	$(TRACE)
+	$(Q)PERFTEST=./perftest2 ./perftest.all thumb
 
 test.thumb: backtrace.thumb perftest.thumb  # run thumb tests
 	$(TRACE)
@@ -129,6 +143,10 @@ backtrace.arm: # show backtrace
 perftest.arm: # run perftest and check stack
 	$(TRACE)
 	$(Q)./perftest.all arm
+
+perftest2.arm: # run perftest2 and check stack
+	$(TRACE)
+	$(Q)PERFTEST=./perftest2 ./perftest.all arm
 
 test.arm: backtrace.arm perftest.arm # run arm tests
 	$(TRACE)
@@ -166,5 +184,7 @@ target.test.arm: # run arm test on target
 target.all: build.arm build.thumb
 	$(TRACE)
 	$(MAKE) -s target.sync
-	$(SSH) root@$(TARGET_IP) make -s -C perftest perftest.arm
-	$(SSH) root@$(TARGET_IP) make -s -C perftest perftest.thumb
+	$(SSH) root@$(TARGET_IP) CALLGRAPH=$(CALLGRAPH) make -s -C perftest perftest.arm
+	$(SSH) root@$(TARGET_IP) CALLGRAPH=$(CALLGRAPH) make -s -C perftest perftest2.arm
+	$(SSH) root@$(TARGET_IP) CALLGRAPH=$(CALLGRAPH) make -s -C perftest perftest.thumb
+	$(SSH) root@$(TARGET_IP) CALLGRAPH=$(CALLGRAPH) make -s -C perftest perftest2.thumb

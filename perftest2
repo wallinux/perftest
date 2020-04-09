@@ -1,0 +1,41 @@
+#!/bin/bash
+
+if [ $# -lt 1 ]; then
+    echo '$0 <app>'
+    exit 1
+fi
+
+APP=$1
+PROFILE_DIR=${2:-profiling}
+SLEEP_TIME=${3:-10}
+PERF=${PERF:-perf}
+
+CALLGRAPH=${CALLGRAPH:-fp}
+
+if [ ! -x $APP ]; then
+    echo '$APP not executable'
+    exit 2
+fi
+
+echo "=== $0: PERF=$PERF, SLEEP_TIME=$SLEEP_TIME, CALLGRAPH=$CALLGRAPH"
+
+rm -f core
+ulimit -c unlimited
+mkdir -p $PROFILE_DIR
+rm -rf $PROFILE_DIR/*
+
+$PERF record --no-buildid --no-buildid-cache --call-graph $CALLGRAPH -F max -g -o $PROFILE_DIR/perf.data $APP stop
+
+if [ -e $PROFILE_DIR/perf.data ]; then
+    $PERF script --header -i $PROFILE_DIR/perf.data -F comm,pid,tid,time,event,ip,sym,dso,period > $PROFILE_DIR/perf.out
+else
+    echo "$PROFILE_DIR/perf.data is missing!!!"
+fi
+
+kill $PID
+
+if [ -e core ]; then
+    exit -1
+else
+    exit 0
+fi
