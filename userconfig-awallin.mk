@@ -4,3 +4,7 @@
 ama1 ama2 vic1 vic2:
 	$(TRACE)
 	$(MAKE) target.all TARGET_IP=$@
+
+qemuarm qemuarm64:
+	$(TRACE)
+	$(MAKE) target.all

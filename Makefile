@@ -18,6 +18,9 @@ OUTDIR		?= $(TOP)/out
 APPS		+=  $(OUTDIR)/bt_perf.native
 APPS		+=  $(OUTDIR)/bt_perf.arm
 APPS		+=  $(OUTDIR)/bt_perf.thumb
+ifneq (,$(filter $(MACHINE),axxiaarm64 qemuarm64))
+APPS	+=  $(OUTDIR)/bt_perf.arm64
+endif
 
 CFLAGS_X	+= -O0
 CFLAGS_X	+= -g -ggdb
@@ -30,10 +33,24 @@ CFLAGS_X	+= -static
 endif
 CFLAGS_arm	+= $(CFLAGS_X) -mapcs-frame
 CFLAGS_thumb	+= $(CFLAGS_X) -mapcs-frame
+CFLAGS_arm64	+= $(CFLAGS_X)
+
+MACHINE		?= axxiaarm
 
 SDK_BASE	?= /opt/windriver/wrlinux/wrl18
-SDK_ENV_axxiaarm?= $(SDK_BASE)/environment-setup-cortexa15t2-neon-wrs-linux-gnueabi
+
+SDK_ENV_axxiaarm   ?= $(SDK_BASE)/environment-setup-cortexa15t2-neon-wrs-linux-gnueabi
+SDK_ENV_axxiaarm64 ?= $(SDK_BASE)/environment-setup-armv7at2hf-neon-wrsmllib32-linux-gnueabi
+SDK_ENV_qemuarm    ?= TBD
+SDK_ENV_qemuarm64  ?= $(SDK_BASE)/environment-setup-armv7vet2hf-vfp-wrsmllib32-linux-gnueabi
+SDK_ENV		   ?= $(SDK_ENV_$(MACHINE))
+
+SDK_ENV64_axxiaarm64 ?= $(SDK_BASE)/environment-setup-aarch64-wrs-linux
+SDK_ENV64_qemuarm64  ?= $(SDK_BASE)/environment-setup-aarch64-wrs-linux
+SDK_ENV64	     ?= $(SDK_ENV64_$(MACHINE))
+
 SDK_ENV_arm	?= $(OUTDIR)/environment_arm
+SDK_ENV_arm64	?= $(OUTDIR)/environment_arm64
 SDK_ENV_thumb	?= $(OUTDIR)/environment_thumb
 SDK_ENV_native	?= $(OUTDIR)/environment_native
 
@@ -91,7 +108,7 @@ test.native: backtrace.native perftest.native # run native tests
 	$(TRACE)
 
 ####################################################################
-$(SDK_ENV_thumb): $(SDK_ENV_axxiaarm) | $(OUTDIR)
+$(SDK_ENV_thumb): $(SDK_ENV) | $(OUTDIR)
 	$(TRACE)
 	$(CP) $< $@
 
@@ -121,7 +138,7 @@ test.thumb: backtrace.thumb perftest.thumb  # run thumb tests
 	$(TRACE)
 
 ####################################################################
-$(SDK_ENV_arm): $(SDK_ENV_axxiaarm) | $(OUTDIR)
+$(SDK_ENV_arm): $(SDK_ENV) | $(OUTDIR)
 	$(TRACE)
 	$(CP) $< $@
 	$(SED) 's/mthumb/marm/' $@
@@ -151,6 +168,39 @@ perftest2.arm: # run perftest2 and check stack
 test.arm: backtrace.arm perftest.arm # run arm tests
 	$(TRACE)
 
+ifneq (,$(filter $(MACHINE),axxiaarm64 qemuarm64))
+####################################################################
+$(SDK_ENV_arm64): $(SDK_ENV64) | $(OUTDIR)
+	$(TRACE)
+	$(CP) $< $@
+
+$(OUTDIR)/bt_perf.arm64: bt_perf.c Makefile $(SDK_ENV_arm64) | $(OUTDIR)
+	$(TRACE)
+	$(ECHO) -----------------------
+	@source $(SDK_ENV_arm64); echo $@: $$CC $(CFLAGS_arm64) $< -o $@
+	@source $(SDK_ENV_arm64); $$CC $(CFLAGS_arm64) $< -o $@
+
+build.arm64: $(OUTDIR)/bt_perf.arm64 # build test application (arm64)
+
+backtrace.arm64: # show backtrace
+	$(TRACE)
+	@strings  $(OUTDIR)/bt_perf.arm64 | sed -n '/GCC:/,/frecord-gcc-switches/p' | tr '\n' ' '
+	$(ECHO) ""
+	$(Q) $(OUTDIR)/bt_perf.arm64 stop || true
+
+perftest.arm64: # run perftest and check stack
+	$(TRACE)
+	$(Q)./perftest.all arm64
+
+perftest2.arm64: # run perftest2 and check stack
+	$(TRACE)
+	$(Q)PERFTEST=./perftest2 ./perftest.all arm64
+
+test.arm64: backtrace.arm64 perftest.arm64 # run arm64 tests
+	$(TRACE)
+
+APPS	+=  $(OUTDIR)/bt_perf.arm64
+endif
 ####################################################################
 clean: # clean
 	$(TRACE)
@@ -180,6 +230,18 @@ target.test.thumb: # run thumb test on target
 target.test.arm: # run arm test on target
 	$(TRACE)
 	$(SSH) root@$(TARGET_IP) make -s -C perftest test.arm
+
+ifneq (,$(filter $(MACHINE),axxiaarm64 qemuarm64))
+target.test.arm64: # run arm64 test on target
+	$(TRACE)
+	$(SSH) root@$(TARGET_IP) make -s -C perftest test.arm64
+
+target64.all: build.arm64
+	$(TRACE)
+	$(MAKE) -s target.sync
+	$(SSH) root@$(TARGET_IP) CALLGRAPH=$(CALLGRAPH) make -s -C perftest perftest.arm
+	$(SSH) root@$(TARGET_IP) CALLGRAPH=$(CALLGRAPH) make -s -C perftest perftest2.arm
+endif
 
 target.all: build.arm build.thumb
 	$(TRACE)

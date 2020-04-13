@@ -10,7 +10,7 @@ PROFILE_DIR=${2:-profiling}
 SLEEP_TIME=${3:-10}
 PERF=${PERF:-perf}
 
-CALLGRAPH=${CALLGRAPH:-dwarf}
+CALLGRAPH=${CALLGRAPH:-fp}
 
 if [ ! -x $APP ]; then
     echo '$APP not executable'
