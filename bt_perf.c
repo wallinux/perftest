@@ -34,29 +34,10 @@ void NOINLINE print_trace (void)
 	}
 }
 
-int NOINLINE nsleep(long miliseconds)
-{
-	struct timespec req, rem;
-
-	if(miliseconds > 999)
-	{
-		req.tv_sec = (int)(miliseconds / 1000);
-		req.tv_nsec = (miliseconds - ((long)req.tv_sec * 1000)) * 1000000;
-	}
-	else
-	{
-		req.tv_sec = 0;
-		req.tv_nsec = miliseconds * 1000000;
-	}
-
-	return nanosleep(&req , &rem);
-}
-
 int NOINLINE perf_e(int i)
 {
 	static int once = 1;
 	printf ("    %s: %i\n", __func__, i);
-	nsleep(5);
 	if (once) {
 		print_trace();
 		once=0;
@@ -87,13 +68,11 @@ void NOINLINE perf_b(int i)
 
 void NOINLINE perf_a(char str[])
 {
-	int i = 0;
+	int i = 1;
 
 	printf ("%s: %s\n", __func__, str);
-
 	while (1) {
 		perf_b(i);
-		nsleep(1);
 		i++;
 		printf("\n");
 	}
