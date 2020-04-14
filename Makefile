@@ -41,7 +41,7 @@ SDK_BASE	?= /opt/windriver/wrlinux/wrl18
 
 SDK_ENV_axxiaarm   ?= $(SDK_BASE)/environment-setup-cortexa15t2-neon-wrs-linux-gnueabi
 SDK_ENV_axxiaarm64 ?= $(SDK_BASE)/environment-setup-armv7at2hf-neon-wrsmllib32-linux-gnueabi
-SDK_ENV_qemuarm    ?= TBD
+SDK_ENV_qemuarm    ?= $(SDK_BASE)/environment-setup-armv5e-wrs-linux-gnueabi
 SDK_ENV_qemuarm64  ?= $(SDK_BASE)/environment-setup-armv7at2-neon-wrsmllib32-linux-gnueabi
 SDK_ENV		   ?= $(SDK_ENV_$(MACHINE))
 
