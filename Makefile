@@ -38,15 +38,16 @@ CFLAGS_arm64	+= $(CFLAGS_X)
 MACHINE		?= axxiaarm
 
 SDK_BASE	?= /opt/windriver/wrlinux/wrl18
+QEMU_BASE	?= $(SDK_BASE)
 
 SDK_ENV_axxiaarm   ?= $(SDK_BASE)/environment-setup-cortexa15t2-neon-wrs-linux-gnueabi
 SDK_ENV_axxiaarm64 ?= $(SDK_BASE)/environment-setup-armv7at2hf-neon-wrsmllib32-linux-gnueabi
-SDK_ENV_qemuarm    ?= $(SDK_BASE)/environment-setup-armv5e-wrs-linux-gnueabi
-SDK_ENV_qemuarm64  ?= $(SDK_BASE)/environment-setup-armv7at2-neon-wrsmllib32-linux-gnueabi
+SDK_ENV_qemuarm    ?= $(QEMU_BASE)/environment-setup-armv5e-wrs-linux-gnueabi
+SDK_ENV_qemuarm64  ?= $(QEMU_BASE)/environment-setup-armv7at2-neon-wrsmllib32-linux-gnueabi
 SDK_ENV		   ?= $(SDK_ENV_$(MACHINE))
 
 SDK_ENV64_axxiaarm64 ?= $(SDK_BASE)/environment-setup-aarch64-wrs-linux
-SDK_ENV64_qemuarm64  ?= $(SDK_BASE)/environment-setup-aarch64-wrs-linux
+SDK_ENV64_qemuarm64  ?= $(QEMU_BASE)/environment-setup-aarch64-wrs-linux
 SDK_ENV64	     ?= $(SDK_ENV64_$(MACHINE))
 
 SDK_ENV_arm	?= $(OUTDIR)/environment_arm

@@ -7,8 +7,10 @@ fi
 
 APP=$1
 PROFILE_DIR=${2:-profiling}
-SLEEP_TIME=${3:-10}
+
+SLEEP=${SLEEP:-10}
 PERF=${PERF:-perf}
+FREQ=${FREQ:-999}
 
 CALLGRAPH=${CALLGRAPH:-fp}
 
@@ -17,20 +19,20 @@ if [ ! -x $APP ]; then
     exit 2
 fi
 
-echo "=== $0:  PERF=$PERF, SLEEP_TIME=$SLEEP_TIME, CALLGRAPH=$CALLGRAPH"
+echo "=== $0:  PERF=$PERF, SLEEP=$SLEEP, CALLGRAPH=$CALLGRAPH"
 
 rm -f core
 ulimit -c unlimited
 mkdir -p $PROFILE_DIR
-rm -rf $PROFILE_DIR/*
+rm -rf $PROFILE_DIR/perf.*
 
 $APP >/dev/null &
 PID=$!
 
-$PERF record --no-buildid --no-buildid-cache --call-graph $CALLGRAPH -F 999 -p $PID -g -o $PROFILE_DIR/perf.data sleep $SLEEP_TIME
+$PERF record --no-buildid --no-buildid-cache --call-graph $CALLGRAPH -F $FREQ -p $PID -g -o $PROFILE_DIR/perf.data sleep $SLEEP
 
 if [ -e $PROFILE_DIR/perf.data ]; then
-    $PERF script --header -i $PROFILE_DIR/perf.data -F comm,pid,tid,time,event,ip,sym,dso,period > $PROFILE_DIR/perf.out
+    $PERF script --header -i $PROFILE_DIR/perf.data -I -F comm,pid,tid,time,event,ip,sym,dso,period > $PROFILE_DIR/perf.out
 else
     echo "$PROFILE_DIR/perf.data is missing!!!"
 fi
