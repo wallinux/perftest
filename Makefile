@@ -233,6 +233,12 @@ target.test.arm: # run arm test on target
 	$(TRACE)
 	$(SSH) root@$(TARGET_IP) make -s -C perftest test.arm
 
+target.all:: build.arm build.thumb
+	$(TRACE)
+	$(MAKE) -s target.sync
+	-$(SSH) root@$(TARGET_IP) CALLGRAPH=$(CALLGRAPH) make -s -C perftest perftest.arm    MACHINE=$(MACHINE)
+	-$(SSH) root@$(TARGET_IP) CALLGRAPH=$(CALLGRAPH) make -s -C perftest perftest.thumb  MACHINE=$(MACHINE)
+
 ifneq (,$(filter $(MACHINE),axxiaarm64 qemuarm64))
 target.test.arm64: # run arm64 test on target
 	$(TRACE)
@@ -241,14 +247,8 @@ target.test.arm64: # run arm64 test on target
 target64.all: build.arm64
 	$(TRACE)
 	$(MAKE) -s target.sync
-	$(SSH) root@$(TARGET_IP) CALLGRAPH=$(CALLGRAPH) make -s -C perftest perftest.arm
-	$(SSH) root@$(TARGET_IP) CALLGRAPH=$(CALLGRAPH) make -s -C perftest perftest2.arm
+	-$(SSH) root@$(TARGET_IP) CALLGRAPH=$(CALLGRAPH) make -s -C perftest perftest.arm64  MACHINE=$(MACHINE)
+
+target.all:: target64.all
 endif
 
-target.all: build.arm build.thumb
-	$(TRACE)
-	$(MAKE) -s target.sync
-	$(SSH) root@$(TARGET_IP) CALLGRAPH=$(CALLGRAPH) make -s -C perftest perftest.arm
-	$(SSH) root@$(TARGET_IP) CALLGRAPH=$(CALLGRAPH) make -s -C perftest perftest2.arm
-	$(SSH) root@$(TARGET_IP) CALLGRAPH=$(CALLGRAPH) make -s -C perftest perftest.thumb
-	$(SSH) root@$(TARGET_IP) CALLGRAPH=$(CALLGRAPH) make -s -C perftest perftest2.thumb

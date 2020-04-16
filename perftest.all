@@ -1,7 +1,7 @@
 #!/bin/bash
 
 MACHINE=${1:-native}
-SLEEP=${SLEEP:-5}
+SLEEP=${SLEEP:-2}
 PROFILE_BASE=out/profiling
 PERFTEST=${PERFTEST-./perftest}
 
@@ -10,10 +10,19 @@ run_test() {
     profile_dir=$PROFILE_BASE/$1
     mkdir -p $profile_dir
     $PERFTEST out/bt_perf.$1 $profile_dir $SLEEP &> $profile_dir/$PERFTEST.out
-    if [ $? -ne 0 ]; then
-	echo -e "\n===== perf failed, core dumped ====\n"
-	exit -1
-    fi
+    status=$?
+    case  $status in
+	"1")
+	    echo -e "\n===== perf failed, core dumped ====\n"
+	    exit $status
+	    ;;
+	"2")
+	    echo -e "\n===== perf failed, application did not start ====\n"
+	    exit $status
+	    ;;
+	*)
+	    ;;
+    esac
 }
 
 samples() {

@@ -1,10 +1,10 @@
 # awallin user config file
 #
 
-ama1 ama2 vic1 vic2:
+ama1 ama2:
 	$(TRACE)
-	$(MAKE) target.all TARGET_IP=$@
+	$(MAKE) target.all MACHINE=axxiaarm TARGET_IP=$@
 
-qemuarm qemuarm64:
+vic1 vic2:
 	$(TRACE)
-	$(MAKE) target.all
+	$(MAKE) target.all MACHINE=axxiaarm64 TARGET_IP=$@
