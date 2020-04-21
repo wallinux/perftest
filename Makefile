@@ -35,25 +35,35 @@ CFLAGS_arm	+= $(CFLAGS_X) -mapcs-frame
 CFLAGS_thumb	+= $(CFLAGS_X) -mapcs-frame
 CFLAGS_arm64	+= $(CFLAGS_X)
 
-MACHINE		?= axxiaarm
+MACHINES	+= axxiaarm
+MACHINES	+= axxiaarm-prime
+MACHINES	+= axxiaarm64
+MACHINES	+= axxiaarm64-prime
+MACHINES	+= qemuarm
+MACHINES	+= qemuarm64
+MACHINE		?= qemuarm
 
 SDK_BASE	?= /opt/windriver/wrlinux/wrl18
 QEMU_BASE	?= $(SDK_BASE)
+PRIME_BASE	?= /opt/windriver/wrlinux/rcs/wrl18
 
-SDK_ENV_axxiaarm   ?= $(SDK_BASE)/environment-setup-cortexa15t2-neon-wrs-linux-gnueabi
-SDK_ENV_axxiaarm64 ?= $(SDK_BASE)/environment-setup-armv7at2hf-neon-wrsmllib32-linux-gnueabi
-SDK_ENV_qemuarm    ?= $(QEMU_BASE)/environment-setup-armv5e-wrs-linux-gnueabi
-SDK_ENV_qemuarm64  ?= $(QEMU_BASE)/environment-setup-armv7at2-neon-wrsmllib32-linux-gnueabi
-SDK_ENV		   ?= $(SDK_ENV_$(MACHINE))
+SDK_ENV_axxiaarm-prime	?= $(PRIME_BASE)/environment-setup-cortexa15t2-neon-wrs-linux-gnueabi
+#SDK_ENV_axxiaarm64-prime?= $(PRIME_BASE)/environment-setup-armv7at2-neon-wrs-linux-gnueabi
+SDK_ENV_axxiaarm64-prime?= $(PRIME_BASE)/environment-setup-armv7at2-neon-wrsmllib32-linux-gnueabi
+SDK_ENV_axxiaarm	?= $(SDK_BASE)/environment-setup-cortexa15t2-neon-wrs-linux-gnueabi
+SDK_ENV_axxiaarm64	?= $(SDK_BASE)/environment-setup-armv7at2hf-neon-wrsmllib32-linux-gnueabi
+SDK_ENV_qemuarm		?= $(QEMU_BASE)/environment-setup-armv5e-wrs-linux-gnueabi
+SDK_ENV_qemuarm64	?= $(QEMU_BASE)/environment-setup-armv7at2-neon-wrsmllib32-linux-gnueabi
+SDK_ENV			?= $(SDK_ENV_$(MACHINE))
 
-SDK_ENV64_axxiaarm64 ?= $(SDK_BASE)/environment-setup-aarch64-wrs-linux
-SDK_ENV64_qemuarm64  ?= $(QEMU_BASE)/environment-setup-aarch64-wrs-linux
-SDK_ENV64	     ?= $(SDK_ENV64_$(MACHINE))
+SDK_ENV64_axxiaarm64	?= $(SDK_BASE)/environment-setup-aarch64-wrs-linux
+SDK_ENV64_qemuarm64	?= $(QEMU_BASE)/environment-setup-aarch64-wrs-linux
+SDK_ENV64		?= $(SDK_ENV64_$(MACHINE))
 
-SDK_ENV_arm	?= $(OUTDIR)/environment_arm
-SDK_ENV_arm64	?= $(OUTDIR)/environment_arm64
-SDK_ENV_thumb	?= $(OUTDIR)/environment_thumb
-SDK_ENV_native	?= $(OUTDIR)/environment_native
+SDK_ENV_arm		?= $(OUTDIR)/environment_arm
+SDK_ENV_arm64		?= $(OUTDIR)/environment_arm64
+SDK_ENV_thumb		?= $(OUTDIR)/environment_thumb
+SDK_ENV_native		?= $(OUTDIR)/environment_native
 
 CALLGRAPH	?= fp
 
@@ -66,6 +76,8 @@ Makefile.help:
 	$(ECHO) ""
 	$(ECHO) " APPS     = $(APPS)"
 	$(ECHO) " SDK_ENV  = $(SDK_ENV)"
+	$(ECHO) " MACHINE  = $(MACHINE)"
+	$(ECHO) " MACHINES  = $(MACHINES)"
 	$(NORMAL)
 
 help:: Makefile.help
@@ -104,7 +116,7 @@ perftest.native: $(OUTDIR)/bt_perf.native # run perftest and check stack
 perftest2.native: $(OUTDIR)/bt_perf.native # run perftest2 and check stack
 	$(TRACE)
 	$(ECHO) "Must be run with root privileges"
-	$(Q)PERFTEST=./perftest2 sudo ./perftest.all native
+	$(Q)PERFTEST=./perftest2 ./perftest.all native
 
 test.native: backtrace.native perftest.native # run native tests
 	$(TRACE)

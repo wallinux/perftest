@@ -11,8 +11,22 @@ int stop = 0;
 #define ARM __attribute__(("arm"))
 #define THUMB __attribute__(("thumb"))
 
+#define MAX_PRIME 50000
+
+void NOINLINE do_primes(void)
+{
+    unsigned long i, num, primes = 0;
+    for (num = 1; num <= MAX_PRIME; ++num) {
+        for (i = 2; (i <= num) && (num % i != 0); ++i);
+        if (i == num)
+            ++primes;
+    }
+    printf("Calculated %li primes.\n", primes);
+}
+
+
 /* Obtain a backtrace and print it to stdout. */
-void NOINLINE print_trace (void)
+void NOINLINE print_trace(void)
 {
 	void *array[10];
 	size_t size;
@@ -29,7 +43,8 @@ void NOINLINE print_trace (void)
 
 	free (strings);
 	if (stop == 1) {
-		sleep(2);
+		/* burning time */
+		do_primes();
 		exit(1);
 	}
 }
