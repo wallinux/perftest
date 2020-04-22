@@ -226,40 +226,48 @@ distclean: # distclean
 	$(RM) *~ \#*#
 
 ####################################################################
-TARGET_IP ?= 128.224.95.181
+TARGET_IP 	?= 128.224.95.181
+SSH_PORT	?= 22
+TARGET_USER	?= root
+SSHOPTS		+= -o StrictHostKeyChecking=no
+SSHOPTS		+= -o UserKnownHostsFile=/dev/null
+
+SSHTARGET	= $(SSH) $(SSHOPTS) $(TARGET_USER)@$(TARGET_IP) -p $(SSH_PORT)
 
 target.sync: # cp files to target
 	$(TRACE)
-	$(RSYNC) -az --exclude=.* --exclude=*~ --exclude=#* --exclude=*native* --exclude=.git \
-		. root@$(TARGET_IP):perftest/
+	$(RSYNC) -az \
+		--exclude=.* --exclude=*~ --exclude=#* --exclude=*native* --exclude=.git \
+		-e "ssh -p $(SSH_PORT) $(SSHOPTS)" \
+		. $(TARGET_USER)@$(TARGET_IP):perftest/
 
 target.ssh: # ssh to target
 	$(TRACE)
-	$(SSH) root@$(TARGET_IP)
+	$(SSHTARGET)
 
 target.test.thumb: # run thumb test on target
 	$(TRACE)
-	$(SSH) root@$(TARGET_IP) make -s -C perftest test.thumb
+	$(SSHTARGET) make -s -C perftest test.thumb
 
 target.test.arm: # run arm test on target
 	$(TRACE)
-	$(SSH) root@$(TARGET_IP) make -s -C perftest test.arm
+	$(SSHTARGET) make -s -C perftest test.arm
 
 target.all:: build.arm build.thumb
 	$(TRACE)
-	$(MAKE) -s target.sync
-	-$(SSH) root@$(TARGET_IP) CALLGRAPH=$(CALLGRAPH) make -s -C perftest perftest.arm    MACHINE=$(MACHINE)
-	-$(SSH) root@$(TARGET_IP) CALLGRAPH=$(CALLGRAPH) make -s -C perftest perftest.thumb  MACHINE=$(MACHINE)
+	$(MAKE) target.sync
+	-$(SSHTARGET) CALLGRAPH=$(CALLGRAPH) make -s -C perftest perftest.arm   MACHINE=$(MACHINE)
+	-$(SSHTARGET) CALLGRAPH=$(CALLGRAPH) make -s -C perftest perftest.thumb MACHINE=$(MACHINE)
 
 ifneq (,$(filter $(MACHINE),axxiaarm64 qemuarm64))
 target.test.arm64: # run arm64 test on target
 	$(TRACE)
-	$(SSH) root@$(TARGET_IP) make -s -C perftest test.arm64
+	$(SSHTARGET) make -s -C perftest test.arm64
 
 target64.all: build.arm64
 	$(TRACE)
 	$(MAKE) -s target.sync
-	-$(SSH) root@$(TARGET_IP) CALLGRAPH=$(CALLGRAPH) make -s -C perftest perftest.arm64  MACHINE=$(MACHINE)
+	-$(SSHTARGET) CALLGRAPH=$(CALLGRAPH) make -s -C perftest perftest.arm64 MACHINE=$(MACHINE)
 
 target.all:: target64.all
 endif
