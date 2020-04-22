@@ -6,7 +6,7 @@ PROFILE_BASE=out/profiling
 PERFTEST=${PERFTEST-./perftest}
 
 run_test() {
-    echo "$1: Running perf (sleep=$SLEEP)"
+    echo "$1: Running perf (sleep=$SLEEP) (callgraph=$CALLGRAPH)"
     profile_dir=$PROFILE_BASE/$1
     mkdir -p $profile_dir
     $PERFTEST out/bt_perf.$1 $profile_dir $SLEEP &> $profile_dir/$PERFTEST.out
@@ -33,6 +33,10 @@ find_function(){
     echo "$1 [$2]: $(grep " $2 " $PROFILE_BASE/$1/perf.out | wc -l)"
 }
 
+find_unknown(){
+    echo "$1 [unknown]: $(grep "unknown" $PROFILE_BASE/$1/perf.out | grep bt_perf.$1 | wc -l)"
+}
+
 find_all() {
     find_function $1 perf_a
     find_function $1 perf_b
@@ -53,3 +57,6 @@ samples $MACHINE
 
 echo -e "\n---- userspace stack trace"
 find_all $MACHINE
+
+echo -e "\n---- unknown stackframe in bt_perf.$MACHINE"
+find_unknown $MACHINE
