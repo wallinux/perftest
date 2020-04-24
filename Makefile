@@ -22,18 +22,23 @@ ifneq (,$(filter $(MACHINE),axxiaarm64 qemuarm64))
 APPS	+=  $(OUTDIR)/bt_perf.arm64
 endif
 
-CFLAGS_X	+= -O0
-CFLAGS_X	+= -g -ggdb
-CFLAGS_X	+= -Wall
-CFLAGS_X	+= -funwind-tables
-CFLAGS_X	+= -fno-omit-frame-pointer
-CFLAGS_X	+= -frecord-gcc-switches
+EXTRA_CFLAGS	+= -O0
+EXTRA_CFLAGS	+= -g -ggdb
+EXTRA_CFLAGS	+= -Wall
+EXTRA_CFLAGS	+= -funwind-tables
+EXTRA_CFLAGS	+= -fno-omit-frame-pointer
+EXTRA_CFLAGS	+= -frecord-gcc-switches
 ifdef STATIC
-CFLAGS_X	+= -static
+EXTRA_CFLAGS	+= -static
 endif
-CFLAGS_arm	+= $(CFLAGS_X) -mapcs-frame
-CFLAGS_thumb	+= $(CFLAGS_X) -mapcs-frame
-CFLAGS_arm64	+= $(CFLAGS_X)
+ifneq ($(MACHINE),axxiaarm64-prime)
+CFLAGS_arm	+= $(EXTRA_CFLAGS) -mapcs-frame
+CFLAGS_thumb	+= $(EXTRA_CFLAGS) -mapcs-frame
+endif
+CFLAGS_arm	+= $(EXTRA_CFLAGS)
+CFLAGS_thumb	+= $(EXTRA_CFLAGS)
+CFLAGS_arm64	+= $(EXTRA_CFLAGS)
+CFLAGS_native	+= $(EXTRA_CFLAGS)
 
 MACHINES	+= axxiaarm
 MACHINES	+= axxiaarm-prime
@@ -97,8 +102,8 @@ $(SDK_ENV_native): | $(OUTDIR)
 $(OUTDIR)/bt_perf.native: bt_perf.c Makefile $(SDK_ENV_native) | $(OUTDIR)
 	$(TRACE)
 	$(ECHO) -----------------------
-	@source $(SDK_ENV_native); echo $@: $$CC $(CFLAGS_X) $< -o $@
-	@source $(SDK_ENV_native); $$CC $(CFLAGS_X) $< -o $@
+	@source $(SDK_ENV_native); echo $@: $$CC $(CFLAGS_native) $< -o $@
+	@source $(SDK_ENV_native); $$CC $(CFLAGS_native) $< -o $@
 
 build.native: $(OUTDIR)/bt_perf.native # build test application (native)
 
@@ -236,10 +241,8 @@ SSHTARGET	= $(SSH) $(SSHOPTS) $(TARGET_USER)@$(TARGET_IP) -p $(SSH_PORT)
 
 target.sync: # cp files to target
 	$(TRACE)
-	$(RSYNC) -az \
-		--exclude=.* --exclude=*~ --exclude=#* --exclude=*native* --exclude=.git \
-		-e "ssh -p $(SSH_PORT) $(SSHOPTS)" \
-		. $(TARGET_USER)@$(TARGET_IP):perftest/
+	$(SSHTARGET) "mkdir -p perftest"
+	$(SCP) $(SSHOPTS) -q -r -P $(SSH_PORT) perftest* Makefile tools.mk out $(TARGET_USER)@$(TARGET_IP):perftest/
 
 target.ssh: # ssh to target
 	$(TRACE)
