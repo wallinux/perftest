@@ -11,6 +11,16 @@ int stop = 0;
 #define ARM __attribute__(("arm"))
 #define THUMB __attribute__(("thumb"))
 
+
+#ifdef DEBUG
+#warning "Building with trace messages"
+#define TRACE(fmt, ...) \
+       do { printf(fmt, __VA_ARGS__); } while (0)
+#else
+#define TRACE(fmt, ...) {}
+#endif
+
+
 #define MAX_PRIME 50000
 
 void NOINLINE do_primes(void)
@@ -21,7 +31,7 @@ void NOINLINE do_primes(void)
         if (i == num)
             ++primes;
     }
-    printf("Calculated %li primes.\n", primes);
+    TRACE("Calculated %li primes.\n", primes);
 }
 
 
@@ -36,10 +46,10 @@ void NOINLINE print_trace(void)
 	size = backtrace(array, 10);
 	strings = backtrace_symbols(array, size);
 
-	printf ("Obtained %zd stack frames.\n", size);
+	TRACE("Obtained %zd stack frames.\n", size);
 
 	for (i = 0; i < size; i++)
-		printf ("%s\n", strings[i]);
+		TRACE("%s\n", strings[i]);
 
 	free (strings);
 	if (stop == 1) {
@@ -52,7 +62,7 @@ void NOINLINE print_trace(void)
 int NOINLINE perf_e(int i)
 {
 	static int once = 1;
-	printf ("    %s: %i\n", __func__, i);
+	TRACE("    %s: %i\n", __func__, i);
 	if (once) {
 		print_trace();
 		once=0;
@@ -63,7 +73,7 @@ int NOINLINE perf_e(int i)
 
 int NOINLINE perf_d(int i)
 {
-	printf ("   %s: %i\n", __func__, i);
+	TRACE("   %s: %i\n", __func__, i);
 	return perf_e(i*2);
 }
 
@@ -71,13 +81,13 @@ void NOINLINE perf_c(int i)
 {
 	static int j;
 
-	printf ("  %s: %i\n", __func__, i);
+	TRACE("  %s: %i\n", __func__, i);
 	j += perf_d(i*2);
 }
 
 void NOINLINE perf_b(int i)
 {
-	printf (" %s: %i\n", __func__, i);
+	TRACE(" %s: %i\n", __func__, i);
 	perf_c(i*2);
 }
 
@@ -85,11 +95,11 @@ void NOINLINE perf_a(char str[])
 {
 	int i = 1;
 
-	printf ("%s: %s\n", __func__, str);
+	TRACE("%s: %s\n", __func__, str);
 	while (1) {
 		perf_b(i);
 		i++;
-		printf("\n");
+		TRACE("%s","\n");
 	}
 }
 
