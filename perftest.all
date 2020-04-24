@@ -3,7 +3,8 @@
 MACHINE=${1:-native}
 SLEEP=${SLEEP:-2}
 PROFILE_BASE=out/profiling
-PERFTEST=${PERFTEST-./perftest}
+PERFTEST=${PERFTEST:-./perftest}
+CALLGRAPH=${CALLGRAPH:-fp}
 
 run_test() {
     echo "$1: Running perf (sleep=$SLEEP) (callgraph=$CALLGRAPH)"
@@ -38,6 +39,7 @@ find_unknown(){
 }
 
 find_all() {
+    find_function $1 main
     find_function $1 perf_a
     find_function $1 perf_b
     find_function $1 perf_c
