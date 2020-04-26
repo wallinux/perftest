@@ -13,6 +13,7 @@ QEMU_PORT 	?= 2222
 qemuarm64:
 	$(TRACE)
 	$(MAKE) target.all MACHINE=qemuarm64 TARGET_IP=localhost SSH_PORT=$(QEMU_PORT)
+	#$(MAKE) target64.all MACHINE=qemuarm64 TARGET_IP=localhost SSH_PORT=$(QEMU_PORT)
 
 dwarf.%:
 	$(TRACE)

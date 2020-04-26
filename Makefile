@@ -18,9 +18,6 @@ OUTDIR		?= $(TOP)/out
 APPS		+=  $(OUTDIR)/bt_perf.native
 APPS		+=  $(OUTDIR)/bt_perf.arm
 APPS		+=  $(OUTDIR)/bt_perf.thumb
-ifneq (,$(filter $(MACHINE),axxiaarm64 qemuarm64))
-APPS	+=  $(OUTDIR)/bt_perf.arm64
-endif
 
 EXTRA_CFLAGS	+= -O0
 EXTRA_CFLAGS	+= -g -ggdb
@@ -187,7 +184,6 @@ perftest2.arm: # run perftest2 and check stack
 test.arm: backtrace.arm perftest.arm # run arm tests
 	$(TRACE)
 
-ifneq (,$(filter $(MACHINE),axxiaarm64 qemuarm64))
 ####################################################################
 $(SDK_ENV_arm64): $(SDK_ENV64) | $(OUTDIR)
 	$(TRACE)
@@ -218,8 +214,6 @@ perftest2.arm64: # run perftest2 and check stack
 test.arm64: backtrace.arm64 perftest.arm64 # run arm64 tests
 	$(TRACE)
 
-APPS	+=  $(OUTDIR)/bt_perf.arm64
-endif
 ####################################################################
 clean: # clean
 	$(TRACE)
@@ -262,7 +256,6 @@ target.all:: build.arm build.thumb
 	-$(SSHTARGET) CALLGRAPH=$(CALLGRAPH) make -s -C perftest perftest.arm   MACHINE=$(MACHINE)
 	-$(SSHTARGET) CALLGRAPH=$(CALLGRAPH) make -s -C perftest perftest.thumb MACHINE=$(MACHINE)
 
-ifneq (,$(filter $(MACHINE),axxiaarm64 qemuarm64))
 target.test.arm64: # run arm64 test on target
 	$(TRACE)
 	$(SSHTARGET) make -s -C perftest test.arm64
@@ -271,7 +264,4 @@ target64.all: build.arm64
 	$(TRACE)
 	$(MAKE) -s target.sync
 	-$(SSHTARGET) CALLGRAPH=$(CALLGRAPH) make -s -C perftest perftest.arm64 MACHINE=$(MACHINE)
-
-target.all:: target64.all
-endif
 
