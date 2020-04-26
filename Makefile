@@ -19,6 +19,14 @@ APPS		+=  $(OUTDIR)/bt_perf.native
 APPS		+=  $(OUTDIR)/bt_perf.arm
 APPS		+=  $(OUTDIR)/bt_perf.thumb
 
+MACHINES	+= axxiaarm
+MACHINES	+= axxiaarm-prime
+MACHINES	+= axxiaarm64
+MACHINES	+= axxiaarm64-prime
+MACHINES	+= qemuarm
+MACHINES	+= qemuarm64
+MACHINE		?= qemuarm
+
 EXTRA_CFLAGS	+= -O0
 EXTRA_CFLAGS	+= -g -ggdb
 EXTRA_CFLAGS	+= -Wall
@@ -28,22 +36,18 @@ EXTRA_CFLAGS	+= -frecord-gcc-switches
 ifdef STATIC
 EXTRA_CFLAGS	+= -static
 endif
-ifneq ($(MACHINE),axxiaarm64-prime)
-CFLAGS_arm	+= $(EXTRA_CFLAGS) -mapcs-frame
-CFLAGS_thumb	+= $(EXTRA_CFLAGS) -mapcs-frame
-endif
-CFLAGS_arm	+= $(EXTRA_CFLAGS)
-CFLAGS_thumb	+= $(EXTRA_CFLAGS)
-CFLAGS_arm64	+= $(EXTRA_CFLAGS)
-CFLAGS_native	+= $(EXTRA_CFLAGS)
 
-MACHINES	+= axxiaarm
-MACHINES	+= axxiaarm-prime
-MACHINES	+= axxiaarm64
-MACHINES	+= axxiaarm64-prime
-MACHINES	+= qemuarm
-MACHINES	+= qemuarm64
-MACHINE		?= qemuarm
+CFLAGS_axxiaarm		+= -mapcs-frame
+CFLAGS_axxiaarm-prime	+= -mapcs-frame
+CFLAGS_axxiaarm64	+= -mapcs-frame
+CFLAGS_axxiaarm64-prime	+=
+CFLAGS_qemuarm		+= -mapcs-frame
+CFLAGS_qemuarm64	+=
+
+CFLAGS_arm	+= $(EXTRA_CFLAGS) $(CFLAGS_$(MACHINE))
+CFLAGS_thumb	+= $(EXTRA_CFLAGS) $(CFLAGS_$(MACHINE))
+CFLAGS_arm64	+= $(EXTRA_CFLAGS) $(CFLAGS_$(MACHINE))
+CFLAGS_native	+= $(EXTRA_CFLAGS) $(CFLAGS_$(MACHINE))
 
 SDK_BASE	?= /opt/windriver/wrlinux/wrl18
 QEMU_BASE	?= $(SDK_BASE)
@@ -225,7 +229,7 @@ distclean: # distclean
 	$(RM) *~ \#*#
 
 ####################################################################
-TARGET_IP 	?= 128.224.95.181
+TARGET_IP	?= 128.224.95.181
 SSH_PORT	?= 22
 TARGET_USER	?= root
 SSHOPTS		+= -o StrictHostKeyChecking=no
@@ -264,4 +268,3 @@ target64.all: build.arm64
 	$(TRACE)
 	$(MAKE) -s target.sync
 	-$(SSHTARGET) CALLGRAPH=$(CALLGRAPH) make -s -C perftest perftest.arm64 MACHINE=$(MACHINE)
-
