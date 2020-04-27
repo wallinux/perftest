@@ -47,7 +47,7 @@ CFLAGS_qemuarm64	+=
 CFLAGS_arm	+= $(EXTRA_CFLAGS) $(CFLAGS_$(MACHINE))
 CFLAGS_thumb	+= $(EXTRA_CFLAGS) $(CFLAGS_$(MACHINE))
 CFLAGS_arm64	+= $(EXTRA_CFLAGS) $(CFLAGS_$(MACHINE))
-CFLAGS_native	+= $(EXTRA_CFLAGS) $(CFLAGS_$(MACHINE))
+CFLAGS_native	+= $(EXTRA_CFLAGS)
 
 SDK_BASE	?= /opt/windriver/wrlinux/wrl18
 QEMU_BASE	?= $(SDK_BASE)
