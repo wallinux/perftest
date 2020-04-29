@@ -26,6 +26,7 @@ mkdir -p $PROFILE_DIR
 rm -rf $PROFILE_DIR/perf.*
 
 $PERF record --no-buildid --no-buildid-cache --call-graph $CALLGRAPH -F $FREQ -g -o $PROFILE_DIR/perf.data $APP stop
+cat /proc/kallsyms > $PROFILE_DIR/kallsyms
 
 if [ -e $PROFILE_DIR/perf.data ]; then
     $PERF script --header -i $PROFILE_DIR/perf.data -I -F comm,pid,tid,time,event,ip,sym,dso,period > $PROFILE_DIR/perf.out

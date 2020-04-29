@@ -8,7 +8,7 @@ fi
 APP=$1
 PROFILE_DIR=${2:-profiling}
 
-SLEEP=${SLEEP:-10}
+SLEEP=${SLEEP:-5}
 PERF=${PERF:-perf}
 FREQ=${FREQ:-999}
 
@@ -37,6 +37,7 @@ if [ $? -ne 0 ]; then
 fi
 
 $PERF record --no-buildid --no-buildid-cache --call-graph $CALLGRAPH -F $FREQ -p $PID -g -o $PROFILE_DIR/perf.data sleep $SLEEP
+cat /proc/kallsyms > $PROFILE_DIR/kallsyms
 
 if [ -e $PROFILE_DIR/perf.data ]; then
     $PERF script --header -i $PROFILE_DIR/perf.data -I -F comm,pid,tid,time,event,ip,sym,dso,period > $PROFILE_DIR/perf.out
