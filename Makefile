@@ -256,6 +256,11 @@ target.sync: # cp files to target
 	$(SSHTARGET) "mkdir -p perftest"
 	$(SCP) $(SSHOPTS) -q -r -P $(SSHPORT) perftest* Makefile tools.mk out $(TARGET_USER)@$(TARGETIP):perftest/
 
+target.get: # cp files from target
+	$(TRACE)
+	$(MKDIR) $(TARGETIP)
+	$(SCP) $(SSHOPTS) -q -r -P $(SSHPORT) $(TARGET_USER)@$(TARGETIP):perftest/out $(TARGETIP)/
+
 target.ssh: # ssh to target
 	$(TRACE)
 	$(SSHTARGET)
