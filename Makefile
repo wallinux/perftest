@@ -229,18 +229,32 @@ distclean: # distclean
 	$(RM) *~ \#*#
 
 ####################################################################
-TARGET_IP	?= 128.224.95.181
-SSH_PORT	?= 22
-TARGET_USER	?= root
-SSHOPTS		+= -o StrictHostKeyChecking=no
-SSHOPTS		+= -o UserKnownHostsFile=/dev/null
+SSHPORT_axxiaarm	?= 22
+SSHPORT_axxiaarm-prime	?= 22
+SSHPORT_axxiaarm64	?= 22
+SSHPORT_axxiaarm64-prime?= 22
+SSHPORT_qemuarm		?= 2222
+SSHPORT_qemuarm64	?= 2222
+SSHPORT			?= $(SSHPORT_$(MACHINE))
 
-SSHTARGET	= $(SSH) $(SSHOPTS) $(TARGET_USER)@$(TARGET_IP) -p $(SSH_PORT)
+TARGETIP_axxiaarm	?= ama1
+TARGETIP_axxiaarm-prime	?= ama1
+TARGETIP_axxiaarm64	?= vic2
+TARGETIP_axxiaarm64-prime?= vic2
+TARGETIP_qemuarm	?= localhost
+TARGETIP_qemuarm64	?= localhost
+TARGETIP		?= $(TARGETIP_$(MACHINE))
+
+TARGET_USER		?= root
+SSHOPTS			+= -o StrictHostKeyChecking=no
+SSHOPTS			+= -o UserKnownHostsFile=/dev/null
+
+SSHTARGET		= $(SSH) $(SSHOPTS) $(TARGET_USER)@$(TARGETIP) -p $(SSHPORT)
 
 target.sync: # cp files to target
 	$(TRACE)
 	$(SSHTARGET) "mkdir -p perftest"
-	$(SCP) $(SSHOPTS) -q -r -P $(SSH_PORT) perftest* Makefile tools.mk out $(TARGET_USER)@$(TARGET_IP):perftest/
+	$(SCP) $(SSHOPTS) -q -r -P $(SSHPORT) perftest* Makefile tools.mk out $(TARGET_USER)@$(TARGETIP):perftest/
 
 target.ssh: # ssh to target
 	$(TRACE)

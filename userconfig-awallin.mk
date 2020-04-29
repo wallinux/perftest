@@ -9,15 +9,14 @@ vic1 vic2:
 	$(TRACE)
 	$(MAKE) target.all MACHINE=axxiaarm64-prime TARGET_IP=$@
 
-QEMU_PORT 	?= 2222
 qemuarm64:
 	$(TRACE)
-	$(MAKE) target.all MACHINE=$@ TARGET_IP=localhost SSH_PORT=$(QEMU_PORT)
-	#$(MAKE) target64.all MACHINE=qemuarm64 TARGET_IP=localhost SSH_PORT=$(QEMU_PORT)
+	$(MAKE) target.all MACHINE=$@ TARGET_IP=localhost
+	#$(MAKE) target64.all MACHINE=qemuarm64 TARGET_IP=localhost
 
 qemuarm:
 	$(TRACE)
-	$(MAKE) target.all MACHINE=$@ TARGET_IP=localhost SSH_PORT=$(QEMU_PORT)
+	$(MAKE) target.all MACHINE=$@ TARGET_IP=localhost
 
 dwarf.%:
 	$(TRACE)
