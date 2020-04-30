@@ -237,29 +237,30 @@ SSHPORT_qemuarm		?= 2222
 SSHPORT_qemuarm64	?= 2222
 SSHPORT			?= $(SSHPORT_$(MACHINE))
 
-TARGETIP_axxiaarm	?= ama1
-TARGETIP_axxiaarm-prime	?= ama1
-TARGETIP_axxiaarm64	?= vic2
-TARGETIP_axxiaarm64-prime?= vic2
-TARGETIP_qemuarm	?= localhost
-TARGETIP_qemuarm64	?= localhost
-TARGETIP		?= $(TARGETIP_$(MACHINE))
+TARGET_axxiaarm		?= ama1
+TARGET_axxiaarm-prime	?= ama1
+TARGET_axxiaarm64	?= vic2
+TARGET_axxiaarm64-prime	?= vic2
+TARGET_qemuarm		?= localhost
+TARGET_qemuarm64	?= localhost
+TARGET			?= $(TARGET_$(MACHINE))
 
 TARGET_USER		?= root
 SSHOPTS			+= -o StrictHostKeyChecking=no
 SSHOPTS			+= -o UserKnownHostsFile=/dev/null
 
-SSHTARGET		= $(SSH) $(SSHOPTS) $(TARGET_USER)@$(TARGETIP) -p $(SSHPORT)
+SSHTARGET		= $(SSH) $(SSHOPTS) $(TARGET_USER)@$(TARGET) -p $(SSHPORT)
 
 target.sync: # cp files to target
 	$(TRACE)
 	$(SSHTARGET) "mkdir -p perftest"
-	$(SCP) $(SSHOPTS) -q -r -P $(SSHPORT) perftest* Makefile tools.mk out $(TARGET_USER)@$(TARGETIP):perftest/
+	$(SCP) $(SSHOPTS) -q -r -P $(SSHPORT) perftest* Makefile tools.mk out $(TARGET_USER)@$(TARGET):perftest/
 
 target.get: # cp files from target
 	$(TRACE)
-	$(MKDIR) $(TARGETIP)
-	$(SCP) $(SSHOPTS) -q -r -P $(SSHPORT) $(TARGET_USER)@$(TARGETIP):perftest/out $(TARGETIP)/
+	$(MKDIR) $(TARGET)
+#	$(SCP) $(SSHOPTS) -q -r -P $(SSHPORT) $(TARGET_USER)@$(TARGET):/root $(TARGET)/
+	$(RSYNC) -az -e "ssh -p $(SSHPORT) $(SSHOPTS)" $(TARGET_USER)@$(TARGET):/root $(TARGET)
 
 target.ssh: # ssh to target
 	$(TRACE)

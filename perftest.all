@@ -1,16 +1,40 @@
 #!/bin/bash
 
-MACHINE=${1:-native}
-SLEEP=${SLEEP:-2}
-PROFILE_BASE=out/profiling
+MACHINE=${1:-arm}
+TARGET=${2:-.}
+
+SLEEP=${SLEEP:-1}
 PERFTEST=${PERFTEST:-./perftest}
 CALLGRAPH=${CALLGRAPH:-fp}
 
-run_test() {
-    echo "$1: Running perf (sleep=$SLEEP) (callgraph=$CALLGRAPH)"
-    profile_dir=$PROFILE_BASE/$1
-    mkdir -p $profile_dir
-    $PERFTEST out/bt_perf.$1 $profile_dir $SLEEP &> $profile_dir/$PERFTEST.out
+PERFDATA=perf.data
+PERFOUT=perf.out
+
+if [ "$TARGET" = "." ]; then
+    RUN=run_target
+    PROFILE_BASE=out/profiling/${MACHINE}/$CALLGRAPH
+else
+    RUN=${RUN:-run_nothing}
+    PROFILE_BASE=${TARGET}/root/perftest/out/profiling/${MACHINE}/$CALLGRAPH
+fi
+
+run_nothing() {
+    echo ""
+}
+
+run_host() {
+    PERFOUT=perf.native.out
+    echo -e "\n==== $(perf version) ===="
+    set -x
+    perf script -D --header -i $PROFILE_BASE/$PERFDATA --kallsyms=$PROFILE_BASE/kallsyms --symfs=$TARGET -I -F comm,pid,tid,time,event,ip,sym,dso,period > $PROFILE_BASE/$PERFOUT
+    set +x
+}
+
+run_target() {
+    echo -e "\n==== $(perf version) ===="
+    echo "$MACHINE: Running perf (sleep=$SLEEP) (callgraph=$CALLGRAPH)"
+    mkdir -p $PROFILE_BASE
+    SLEEP=$SLEEP $PERFTEST out/bt_perf.$MACHINE $PROFILE_BASE &> $PROFILE_BASE/$PERFTEST.out
     status=$?
     case  $status in
 	"1")
@@ -27,38 +51,38 @@ run_test() {
 }
 
 samples() {
-    echo "$1: $(grep "^bt_perf" $PROFILE_BASE/$1/perf.out | wc -l)"
+    echo "$MACHINE: $(grep "^bt_perf" $PROFILE_BASE/$PERFOUT | wc -l)"
 }
 
 find_function(){
-    echo "$1 [$2]: $(grep " $2 " $PROFILE_BASE/$1/perf.out | wc -l)"
+    echo "$MACHINE [$1]: $(grep " $1 " $PROFILE_BASE/$PERFOUT | wc -l)"
 }
 
 find_unknown(){
-    echo "$1 [unknown]: $(grep "unknown" $PROFILE_BASE/$1/perf.out | grep bt_perf.$1 | wc -l)"
+    echo "$MACHINE [unknown]: $(grep "unknown" $PROFILE_BASE/$PERFOUT | grep bt_perf.$1 | wc -l)"
 }
 
 find_all() {
-    find_function $1 main
-    find_function $1 perf_a
-    find_function $1 perf_b
-    find_function $1 perf_c
-    find_function $1 perf_d
-    find_function $1 perf_e
+    find_function main
+    find_function perf_a
+    find_function perf_b
+    find_function perf_c
+    find_function perf_d
+    find_function perf_e
     echo ""
 }
 
-echo -e "\n==== $(perf version) ===="
-run_test $MACHINE
+
+$RUN
 
 echo -e "\n---- file size"
-ls -al $PROFILE_BASE/$MACHINE/perf.out
+ls -al $PROFILE_BASE/$PERFOUT
 
 echo -e "\n---- no of samples"
-samples $MACHINE
+samples
 
 echo -e "\n---- userspace stack trace"
-find_all $MACHINE
+find_all
 
 echo -e "\n---- unknown stackframe in bt_perf.$MACHINE"
-find_unknown $MACHINE
+find_unknown

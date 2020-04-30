@@ -10,9 +10,10 @@ PROFILE_DIR=${2:-profiling}
 
 SLEEP=${SLEEP:-5}
 PERF=${PERF:-perf}
-FREQ=${FREQ:-999}
+FREQ=${FREQ:-99}
 
 CALLGRAPH=${CALLGRAPH:-fp}
+STACKSIZE=${STACKSIZE:-128}
 
 if [ ! -x $APP ]; then
     echo '$APP not executable'
@@ -36,7 +37,13 @@ if [ $? -ne 0 ]; then
    exit 2
 fi
 
-$PERF record --no-buildid --no-buildid-cache --call-graph $CALLGRAPH -F $FREQ -p $PID -g -o $PROFILE_DIR/perf.data sleep $SLEEP
+if [ "$CALLGRAPH" = "dwarf" ]; then
+    $PERF record --no-buildid --no-buildid-cache -g --call-graph $CALLGRAPH,$STACKSIZE -F $FREQ -p $PID -o $PROFILE_DIR/perf.data sleep $SLEEP
+else
+    $PERF record --no-buildid --no-buildid-cache -g --call-graph $CALLGRAPH -F $FREQ -p $PID -o $PROFILE_DIR/perf.data sleep $SLEEP
+fi
+#$PERF record -v -g --call-graph $CALLGRAPH -F $FREQ -p $PID -o $PROFILE_DIR/perf.data sleep $SLEEP
+#$PERF archive $PROFILE_DIR/perf.data
 cat /proc/kallsyms > $PROFILE_DIR/kallsyms
 
 if [ -e $PROFILE_DIR/perf.data ]; then

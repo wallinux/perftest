@@ -4,13 +4,13 @@
 
 ama1 ama2:
 	$(TRACE)
-	$(MAKE) target.all MACHINE=axxiaarm-prime TARGET_IP=$@
-	$(MAKE) target.get MACHINE=axxiaarm64-prime TARGET_IP=$@
+	$(MAKE) target.all MACHINE=axxiaarm-prime TARGET=$@
+	$(MAKE) target.get MACHINE=axxiaarm64-prime TARGET=$@
 
 vic1 vic2:
 	$(TRACE)
-	$(MAKE) target.all MACHINE=axxiaarm64-prime TARGET_IP=$@
-	$(MAKE) target.get MACHINE=axxiaarm64-prime TARGET_IP=$@
+	$(MAKE) target.all MACHINE=axxiaarm64-prime TARGET=$@
+	$(MAKE) target.get MACHINE=axxiaarm64-prime TARGET=$@
 
 qemuarm:
 	$(TRACE)
@@ -19,7 +19,7 @@ qemuarm:
 qemuarm64:
 	$(TRACE)
 	$(MAKE) target.all MACHINE=$@ TARGET_IP=localhost
-	#$(MAKE) target64.all MACHINE=qemuarm64 TARGET_IP=localhost
+	#$(MAKE) target64.all MACHINE=qemuarm64 TARGET=localhost
 
 dwarf.%:
 	$(TRACE)
@@ -28,3 +28,4 @@ dwarf.%:
 fp.%:
 	$(TRACE)
 	$(MAKE) $* CALLGRAPH=fp
+
