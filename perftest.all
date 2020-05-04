@@ -5,6 +5,7 @@ TARGET=${2:-.}
 
 SLEEP=${SLEEP:-1}
 PERFTEST=${PERFTEST:-./perftest}
+PERF=${PERF:-perf}
 CALLGRAPH=${CALLGRAPH:-fp}
 
 PERFDATA=perf.data
@@ -26,7 +27,7 @@ run_host() {
     PERFOUT=perf.native.out
     echo -e "\n==== $(perf version) ===="
     set -x
-    perf script -D --header -i $PROFILE_BASE/$PERFDATA --kallsyms=$PROFILE_BASE/kallsyms --symfs=$TARGET -I -F comm,pid,tid,time,event,ip,sym,dso,period > $PROFILE_BASE/$PERFOUT
+    $PERF script -D --header -i $PROFILE_BASE/$PERFDATA --kallsyms=$PROFILE_BASE/kallsyms --symfs=$TARGET -I -F comm,pid,tid,time,event,ip,sym,dso,period > $PROFILE_BASE/$PERFOUT
     set +x
 }
 
