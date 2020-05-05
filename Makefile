@@ -73,6 +73,8 @@ SDK_ENV_native		?= $(OUTDIR)/environment_native
 
 CALLGRAPH	?= fp
 
+PERFTEST_ALL	= ./perftest.all
+
 #########################################################
 .PHONY:: all help
 
@@ -117,12 +119,12 @@ backtrace.native: $(OUTDIR)/bt_perf.native # show backtrace
 perftest.native: $(OUTDIR)/bt_perf.native # run perftest and check stack
 	$(TRACE)
 	$(ECHO) "Must be run with root privileges"
-	$(Q)sudo ./perftest.all native
+	$(Q)sudo $(PERFTEST_ALL) native
 
 perftest2.native: $(OUTDIR)/bt_perf.native # run perftest2 and check stack
 	$(TRACE)
 	$(ECHO) "Must be run with root privileges"
-	$(Q)PERFTEST=./perftest2 ./perftest.all native
+	$(Q)PERFTEST=./perftest2 $(PERFTEST_ALL) native
 
 test.native: backtrace.native perftest.native # run native tests
 	$(TRACE)
@@ -148,11 +150,11 @@ backtrace.thumb: # show backtrace
 
 perftest.thumb: # run perftest and check stack
 	$(TRACE)
-	$(Q)./perftest.all thumb
+	$(Q)$(PERFTEST_ALL) thumb
 
 perftest2.thumb: # run perftest2 and check stack
 	$(TRACE)
-	$(Q)PERFTEST=./perftest2 ./perftest.all thumb
+	$(Q)PERFTEST=./perftest2 $(PERFTEST_ALL) thumb
 
 test.thumb: backtrace.thumb perftest.thumb  # run thumb tests
 	$(TRACE)
@@ -179,11 +181,11 @@ backtrace.arm: # show backtrace
 
 perftest.arm: # run perftest and check stack
 	$(TRACE)
-	$(Q)./perftest.all arm
+	$(Q)$(PERFTEST_ALL) arm
 
 perftest2.arm: # run perftest2 and check stack
 	$(TRACE)
-	$(Q)PERFTEST=./perftest2 ./perftest.all arm
+	$(Q)PERFTEST=./perftest2 $(PERFTEST_ALL) arm
 
 test.arm: backtrace.arm perftest.arm # run arm tests
 	$(TRACE)
@@ -209,11 +211,11 @@ backtrace.arm64: # show backtrace
 
 perftest.arm64: # run perftest and check stack
 	$(TRACE)
-	$(Q)./perftest.all arm64
+	$(Q)$(PERFTEST_ALL) arm64
 
 perftest2.arm64: # run perftest2 and check stack
 	$(TRACE)
-	$(Q)PERFTEST=./perftest2 ./perftest.all arm64
+	$(Q)PERFTEST=./perftest2 $(PERFTEST_ALL) arm64
 
 test.arm64: backtrace.arm64 perftest.arm64 # run arm64 tests
 	$(TRACE)

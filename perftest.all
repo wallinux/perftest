@@ -27,7 +27,7 @@ run_host() {
     PERFOUT=perf.native.out
     echo -e "\n==== $(perf version) ===="
     set -x
-    $PERF script -D --header -i $PROFILE_BASE/$PERFDATA --kallsyms=$PROFILE_BASE/kallsyms --symfs=$TARGET -I -F comm,pid,tid,time,event,ip,sym,dso,period > $PROFILE_BASE/$PERFOUT
+    $PERF script --header -i $PROFILE_BASE/$PERFDATA --kallsyms=$PROFILE_BASE/kallsyms --symfs=$TARGET -I -F comm,pid,tid,time,event,ip,sym,dso,period > $PROFILE_BASE/$PERFOUT
     set +x
 }
 
